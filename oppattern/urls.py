@@ -1,0 +1,13 @@
+from django.urls import path
+from . import views
+
+
+app_name = 'oppattern'
+
+urlpatterns = [
+    path('', views.index, name='index'),
+    path('upload/', views.upload, name='upload'),
+    path('read_excel/', views.read_excel, name='read_excel'),
+
+]
+
