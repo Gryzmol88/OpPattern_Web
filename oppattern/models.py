@@ -10,15 +10,15 @@ class ExcelFile(models.Model):
         ordering = ('-date',)
 
     def __str__(self):
-        return self.title
+        return f'{self.date.date()} : {self.title}'
 
 class Subject(models.Model):
     excel_file = models.ForeignKey(ExcelFile, on_delete=models.CASCADE, default=None)
     classroom = models.CharField(max_length=100, default=None)
     date = models.DateTimeField(default=None)
     name = models.CharField(max_length=300, default=None)
-    start_time = models.DateTimeField(default=None)
-    end_time = models.DateTimeField(default=None)
+    start_time = models.TimeField(default=None)
+    end_time = models.TimeField(default=None)
     questionnaire = models.BooleanField(default=False)
 
     class Meta:

@@ -1,3 +1,5 @@
+{% extends "oppattern/base.html" %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,21 +9,26 @@
 <body>
  <p>Tutaj bede uploadował pliki</p>
 
-{% block content %}
-  <form method="post" enctype="multipart/form-data">
+ <main role="main" class="container">
+    <div class="pb-2 mb-2 border-bottom">
+      {% block page_header %}{% endblock page_header %}
+    </div>
+    <div>
+      {% block content %}
+          <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="file"
                    title="Upload excel file"
                    name="excel_file">
     <button type="submit">Upload</button>
   </form>
+      {% if title %}
+<p>Nazwa pliku {{title}}</p>
+ <p>Data wgrania pliku: {{date}} </p>
+{% endif %}
 
 {% endblock %}
-
- {% if title %}
-<p>Nazwa pliku {{title}}</p>
- <p>Data utworzenia: {{date}} </p>
- <button class="submit"><a href="{% url 'oppattern:read_excel' %}">Przetwórz</a></button>
-{% endif %}
+    </div>
+  </main>
 </body>
 </html>

@@ -40,6 +40,9 @@ INSTALLED_APPS = [
 
     #Project app.
     'oppattern',
+
+    #Outsources app.
+    'bootstrap4',
 ]
 
 MIDDLEWARE = [

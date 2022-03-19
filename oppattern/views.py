@@ -1,9 +1,10 @@
-from datetime import datetime
-
 import openpyxl
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
+
+from .forms import SubjectForm
 from .models import ExcelFile, Subject
+from .operation import read_excel_file, check_date, check_mistake
 
 
 # Create your views here.
@@ -26,73 +27,58 @@ def upload(request):
         file.save()
         date = file.date
 
-
-        #Create Subjects object from xlsx file.
-
-        #Create Clasroom name.
-        wb = openpyxl.load_workbook(excel_file, data_only=True)
-        for active_sheet in wb.sheetnames:
-
-            # activated sheet.
-            sheet = wb[active_sheet]
-
-
-            # add date to subject object
-
-            for date_row in range(1, 300):
-                temp_date = None
-                temp_classroom = None
-                temp_excel_file = None
-                temp_name = None
-                temp_start_time = None
-                temp_start_endtime = None
-
-                cell = sheet.cell(row=date_row, column=2)
-                # Check is cell.value is datetieme. IF True. create objects.
-                if isinstance(cell.value, datetime):
-                    # Create subject date
-                    temp_date = cell.value
-                    # Create subject classroom
-                    temp_classroom = active_sheet
-                    # Create subject excel file
-                    temp_excel_file = file
-
-
-
-
-                    #Create subject name
-                    for merged in sheet.merged_cells.ranges:
-                        for column_number in range(3, 57):
-                            cell = sheet.cell(row=date_row, column=column_number)
-                            # Jeżeli koordynant komórki znajduje się w zakresie scalonych
-                            # komórki zapisuje scalenie i przeskakuje do szukania dalszych scaleń.
-                            if cell.coordinate in merged:
-                                temp_name = merged.start_cell.value
-
-
-
-                                sb = Subject()
-                                sb.date = temp_date
-                                sb.classroom = temp_classroom
-                                sb.excel_file = temp_excel_file
-                                sb.name = temp_name
-                                #Create subject start_time.
-                                sb.start_time = timezone.now().date()
-                                #Create subject end_time.
-                                sb.end_time = timezone.now().date()
-                                sb.save()
-                                break
-
-
-
-
-
+        #Create object for db.
+        for data in read_excel_file(excel_file):
+            sb = Subject()
+            sb.excel_file = file
+            sb.classroom = data['classroom']
+            sb.name = data['name']
+            sb.date = data['date']
+            sb.start_time = data['start_time']
+            sb.end_time = data['end_time']
+            sb.save()
 
         contetxt = {'title': title, 'date': date}
 
         return render(request, 'oppattern/upload.html', contetxt)
 
+def check_excel(request):
 
-def read_excel(request):
+    if request.method != 'POST':
 
-    return render(request, 'oppattern/read_excel.html')
+        return render(request, 'oppattern/check_excel.html')
+
+    else:
+        #Uploade xlsx file.
+        excel_file = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(filename=excel_file, data_only=True)
+        wrong_subjects = check_mistake(wb)
+        wrong_dates = check_date(wb)
+
+        contetxt = {'wrong_dates': wrong_dates, 'wrong_subjects': wrong_subjects}
+    return render(request, 'oppattern/check_excel.html', contetxt)
+
+def daily_plan(request):
+    daily_subjects = []
+    if request.method != 'POST':
+        form = SubjectForm()
+    else:
+        form = SubjectForm(request.POST)
+        if form.is_valid():
+            excel_file = form.cleaned_data['excel_file']
+            date_choice = form.cleaned_data['date_choice']
+            for object in Subject.objects.all():
+                if object.excel_file == excel_file and object.date.date() == date_choice:
+                    daily_subjects.append(object)
+
+
+           # daily_subject = Subject.objects.get(excel_file=excel_file)
+    context = {'form': form, 'daily_subjects': daily_subjects}
+
+    return render(request, 'oppattern/daily_plan.html', context)
+
+def show_daily_plan(request):
+    # subject_file = Subject.objects.get(excel_file=excel_file_id)
+    # #daily_subject = subject_file.objects.get(date=date)
+    # context = {'subject_file': subject_file}
+    return render(request, 'oppattern/show_daily_plan.html')

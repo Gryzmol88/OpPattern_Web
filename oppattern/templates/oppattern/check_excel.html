@@ -1,0 +1,45 @@
+{% extends "oppattern/base.html" %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<main role="main" class="container">
+    <div class="pb-2 mb-2 border-bottom">
+      {% block page_header %}{% endblock page_header %}
+    </div>
+    <div>
+      {% block content %}
+
+         <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file"
+                   title="Upload excel file"
+                   name="excel_file">
+    <button type="submit">Upload</button>
+  </form>
+      {% if wrong_dates %}
+        <p>Błąd w dacie:</p>
+        {% for wrong_date in wrong_dates %}
+        <p>Data: {{wrong_date.date|date:'Y-m-d'}}</p>
+        <p>Sala: {{wrong_date.classroom}}</p>
+        {% endfor %}
+    {% endif %}
+        {% if wrong_subjects %}
+        <p>Błąd w planie:</p>
+        {% for wrong_subject in wrong_subjects %}
+        <p>Nazwa przedmiotu: {{wrong_subject.name}}</p>
+        <p>Sala: {{wrong_subject.classroom}}</p>
+        <p>Adres komórki: {{wrong_subject.cell_address}}</p>
+        {% endfor %}
+    {% endif %}
+
+        {% endblock content %}
+    </div>
+  </main>
+
+</body>
+</html>
