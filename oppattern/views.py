@@ -71,8 +71,6 @@ def daily_plan(request):
                 if object.excel_file == excel_file and object.date.date() == date_choice:
                     daily_subjects.append(object)
 
-
-           # daily_subject = Subject.objects.get(excel_file=excel_file)
     context = {'form': form, 'daily_subjects': daily_subjects}
 
     return render(request, 'oppattern/daily_plan.html', context)
