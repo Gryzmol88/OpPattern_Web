@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
-<body>
-<p>TUTAJ BEDZIE WYSWIETLANY PLAN</p>
-</body>
+    <body>
+        <table border="1px solid black">
+            <thead>
+            <tr>
+            <th>Sale </th>
+               {% for time in time_list %}
+                <th><time> {{ time|time:"H:i" }} </time></th>
+               {% endfor %}
+            </tr>
+           </thead>
+            <tbody>
+
+            {% for key, value in subjects.items %}
+            <tr><th>{{key}}</th>
+                {% for class in value %}
+                    <th colspan="{{class.merged_cell}}">{{class.subject_name}}</th>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </body>
 </html>

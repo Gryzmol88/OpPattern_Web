@@ -1,6 +1,7 @@
 import openpyxl
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from datetime import time
 
 from .forms import SubjectForm
 from .models import ExcelFile, Subject
@@ -50,8 +51,8 @@ def check_excel(request):
 
     else:
         #Uploade xlsx file.
-        excel_file = request.FILES['excel_file']
-        wb = openpyxl.load_workbook(filename=excel_file, data_only=True)
+        excel_file_check = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(filename=excel_file_check, data_only=True)
         wrong_subjects = check_mistake(wb)
         wrong_dates = check_date(wb)
 
@@ -76,7 +77,77 @@ def daily_plan(request):
     return render(request, 'oppattern/daily_plan.html', context)
 
 def show_daily_plan(request):
-    # subject_file = Subject.objects.get(excel_file=excel_file_id)
-    # #daily_subject = subject_file.objects.get(date=date)
-    # context = {'subject_file': subject_file}
-    return render(request, 'oppattern/show_daily_plan.html')
+    #Musze pobrać tylko obiekty  porządanej daty.
+    plans = Subject.objects.all()
+
+    #Stworzyć baze wszystkich sal. Może na podstawie klucza obcego w modelach?
+    classroom_all = ['SOR', 'IT', '101']
+
+
+    subjects = {}
+    for class_name in classroom_all:
+        subjects[class_name] = to_html_pattern(plans, class_name)
+
+    context = {'time_list': make_time_description().keys(), 'subjects': subjects}
+    return render(request, 'oppattern/show_daily_plan.html', context)
+
+
+
+def make_time_description():
+    """Making time dict where key is time  and valueis column number."""
+    time_list = []
+    time_dict = {}
+    skip = 15
+    minute = -15
+    hour = 7
+    for x in range(0, 55):
+        minute += skip
+        if minute == 60:
+            minute = 0
+            hour += 1
+        time_list.append(time(hour, minute))
+    for column_number, sub_time in enumerate(time_list):
+        time_dict[sub_time] = column_number
+
+    return time_dict
+
+def select_classroom(plan_list, classroom_name):
+    """ Take Subject list and str wit classroom name. Return list with  dictionary"""
+    subject_list = []
+    #Transcrypt the models object to dict.
+    for subject in plan_list:
+        if subject.classroom == classroom_name:
+            subject_dict = {'start_column': make_time_description()[subject.start_time],
+                           'merged_cell': make_time_description()[subject.end_time]
+                                          - make_time_description()[subject.start_time],
+                           'subject_name': subject.name}
+            subject_list.append(subject_dict)
+            #Sort for start time.
+            subject_list = sorted(subject_list, key=lambda x: x['start_column'])
+    return subject_list
+
+def to_html_pattern(plan_list, classroom_name):
+    """Create  list pattern for HTML template """
+    merged_cell = []
+    object_list = []
+    #Create list with numbers that should be removed.
+    for object in select_classroom(plan_list, classroom_name):
+        object_list.append(object)
+        for merged_out in range(object['start_column']+1, object['start_column']+object['merged_cell']):
+            merged_cell.append(merged_out)
+    #Create list with 55 numbers (time from 7:00 to 20:30)
+    pattern_list = [x for x in range(55)]
+    #Removed numbers that are merged cells
+    for removed in merged_cell:
+        pattern_list.remove(removed)
+    #Put the object in to start cells
+    for object in object_list:
+        for index, number in enumerate(pattern_list):
+            if object['start_column'] == number:
+                pattern_list[index] = object
+    #Removed the numbers and put empty list.
+    for number, object in enumerate(pattern_list):
+        if type(object) is int:
+            pattern_list[number] = []
+
+    return pattern_list

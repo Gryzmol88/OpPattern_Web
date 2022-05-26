@@ -142,4 +142,8 @@ def check_date(wb):
                     and (start.value.date() > today.date() + difference or start.value.date() < today.date() - difference):
                 wd = WrongDate(start.value, active_sheet)
                 date_list.append(wd)
+
+    for x in date_list:
+        print(x)
+
     return date_list
