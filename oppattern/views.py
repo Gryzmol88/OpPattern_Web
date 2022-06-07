@@ -1,10 +1,12 @@
+import datetime
+
 import openpyxl
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from datetime import time
 
 from .forms import SubjectForm
-from .models import ExcelFile, Subject
+from .models import ExcelFile, Subject, ClassroomExcel
 from .operation import read_excel_file, check_date, check_mistake
 
 
@@ -24,23 +26,47 @@ def upload(request):
         title = excel_file.name
         file = ExcelFile()
         file.title = title
-        file.date = timezone.now().date()
+        file.date = timezone.now() #.date()
         file.save()
         date = file.date
+
+        #Get the list of class name from excel.
+        classroom_list = []
 
         #Create object for db.
         for data in read_excel_file(excel_file):
             sb = Subject()
             sb.excel_file = file
             sb.classroom = data['classroom']
+            #Create unique list with class name
+            if data['classroom'] not in classroom_list:
+                classroom_list.append(data['classroom'])
             sb.name = data['name']
             sb.date = data['date']
             sb.start_time = data['start_time']
             sb.end_time = data['end_time']
             sb.save()
+        #Creat of list with existing object in model ClassroomExcel
+        classroom_execel_list = []
+        for object in ClassroomExcel.objects.all():
+            classroom_execel_list.append(object.name)
+
+        #Check if class name is in the object. If not create new object if yes, added file to existing object
+
+        for class_name in classroom_list:
+            if class_name in classroom_execel_list:
+                classroom = ClassroomExcel.objects.get(name=class_name)
+                file.classrooms.add(classroom)
+                file.save()
+            else:
+                ce = ClassroomExcel(name=class_name)
+                ce.save()
+                classroom = ClassroomExcel.objects.get(name=class_name)
+                file.classrooms.add(classroom)
+                file.save()
+
 
         contetxt = {'title': title, 'date': date}
-
         return render(request, 'oppattern/upload.html', contetxt)
 
 def check_excel(request):
@@ -60,7 +86,7 @@ def check_excel(request):
     return render(request, 'oppattern/check_excel.html', contetxt)
 
 def daily_plan(request):
-    daily_subjects = []
+
     if request.method != 'POST':
         form = SubjectForm()
     else:
@@ -68,27 +94,32 @@ def daily_plan(request):
         if form.is_valid():
             excel_file = form.cleaned_data['excel_file']
             date_choice = form.cleaned_data['date_choice']
-            for object in Subject.objects.all():
-                if object.excel_file == excel_file and object.date.date() == date_choice:
-                    daily_subjects.append(object)
+            excel_id = excel_file.id
+            return redirect('oppattern:show_daily_plan',  excel_id=excel_id, date_choice=date_choice)
 
-    context = {'form': form, 'daily_subjects': daily_subjects}
+    context = {'form': form}
 
     return render(request, 'oppattern/daily_plan.html', context)
 
-def show_daily_plan(request):
-    #Musze pobrać tylko obiekty  porządanej daty.
-    plans = Subject.objects.all()
+def show_daily_plan(request, excel_id, date_choice):
 
-    #Stworzyć baze wszystkich sal. Może na podstawie klucza obcego w modelach?
-    classroom_all = ['SOR', 'IT', '101']
+    date = datetime.datetime.strptime(date_choice, '%Y-%m-%d')
+    excel_file = ExcelFile.objects.get(id=excel_id)
+    plans = Subject.objects.filter(excel_file=excel_file).filter(date=date)
+    #Create day of week
+    days = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela']
+    week_day = datetime.datetime.weekday(date)
+    days[week_day]
 
-
+    # Creat list of class for html pattern
+    classroom_all = []
+    for class_room in excel_file.classrooms.all():
+        classroom_all.append(class_room.name)
     subjects = {}
     for class_name in classroom_all:
         subjects[class_name] = to_html_pattern(plans, class_name)
 
-    context = {'time_list': make_time_description().keys(), 'subjects': subjects}
+    context = {'time_list': make_time_description().keys(), 'subjects': subjects, 'date': date, 'week_day': days[week_day]}
     return render(request, 'oppattern/show_daily_plan.html', context)
 
 
@@ -100,7 +131,7 @@ def make_time_description():
     skip = 15
     minute = -15
     hour = 7
-    for x in range(0, 55):
+    for x in range(0, 57):
         minute += skip
         if minute == 60:
             minute = 0
@@ -136,7 +167,7 @@ def to_html_pattern(plan_list, classroom_name):
         for merged_out in range(object['start_column']+1, object['start_column']+object['merged_cell']):
             merged_cell.append(merged_out)
     #Create list with 55 numbers (time from 7:00 to 20:30)
-    pattern_list = [x for x in range(55)]
+    pattern_list = [x for x in range(57)]
     #Removed numbers that are merged cells
     for removed in merged_cell:
         pattern_list.remove(removed)
@@ -151,3 +182,6 @@ def to_html_pattern(plan_list, classroom_name):
             pattern_list[number] = []
 
     return pattern_list
+
+
+

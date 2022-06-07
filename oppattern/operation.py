@@ -147,3 +147,15 @@ def check_date(wb):
         print(x)
 
     return date_list
+
+
+def get_classrooms(excel_file):
+    """Create the list with classroom"""
+    return_list = []
+
+    wb = openpyxl.load_workbook(filename=excel_file, data_only=True)
+
+    for active_sheet in wb.sheetnames:
+        return_list.append(active_sheet)
+
+    return return_list

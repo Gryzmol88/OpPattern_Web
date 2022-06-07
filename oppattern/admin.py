@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ExcelFile, Subject
+from .models import ExcelFile, Subject, ClassroomExcel
 
 # Register your models here.
 
@@ -14,3 +14,7 @@ class SubjectAdmin(admin.ModelAdmin):
 @admin.register(ExcelFile)
 class ExcelFileAdmin(admin.ModelAdmin):
     list_display = ('title', 'date')
+
+@admin.register(ClassroomExcel)
+class ClassroomAdmin(admin.ModelAdmin):
+    list_display = ('name',)
