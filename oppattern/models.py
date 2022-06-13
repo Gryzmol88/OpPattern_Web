@@ -5,8 +5,6 @@ from django.utils import timezone
 class ClassroomExcel(models.Model):
     name = models.CharField(max_length=100, default=None)
 
-    class Meta:
-        ordering = ('-name',)
 
     def __str__(self):
         return self.name

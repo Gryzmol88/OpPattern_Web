@@ -1,24 +1,21 @@
-{% extends "oppattern/base.html" %}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link href="{% static 'css/plan.css' %}" rel="stylesheet">
 </head>
     <body>
-    <main role="main" class="container">
-    <div class="pb-2 mb-2 border-bottom">
-      {% block page_header %}{% endblock page_header %}
-    </div >
 
-        {% block content %}
-        <div class="container-fluid">
+        <div>
         <caption>{{date.date|date:'Y-m-d'}} {{week_day}}</caption>
-        <table  class="table table-striped"  border="2px solid black">
+            <a href="{%  url 'oppattern:daily_plan' %}">POWRÓT</a>
+        <table>
             <thead>
             <tr>
-            <th style="text-align: center">Sale </th>
+            <th>Sale </th>
                {% for time in time_list %}
                 <th><time> {{ time|time:"H:i" }} </time></th>
                {% endfor %}
@@ -27,15 +24,14 @@
             <tbody>
 
             {% for key, value in subjects.items %}
-            <tr style="text-align: center"><th>{{key}}</th>
+            <tr><th>{{key}}</th>
                 {% for class in value %}
-                    <th colspan="{{class.merged_cell}}" style="text-align: center">{{class.subject_name}}</th>
+                    <th colspan="{{class.merged_cell}}">{{class.subject_name}}</th>
                 {% endfor %}
             </tr>
             {% endfor %}
             </tbody>
         </table>
         </div>
-        {% endblock content %}
     </body>
 </html>

@@ -22,11 +22,18 @@
                    name="excel_file">
     <button type="submit">Upload</button>
   </form>
+        {% if spinner_show %}
+               <div class="spinner-border text-info" role="status">
+  <span class="sr-only">Loading...</span>
+            </div>
+                   {% endif %}
+
       {% if title %}
 <p>Nazwa pliku {{title}}</p>
  <p>Data wgrania pliku: {{date}} </p>
-{% endif %}
 
+
+{% endif %}
 {% endblock %}
     </div>
   </main>

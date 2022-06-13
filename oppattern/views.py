@@ -16,17 +16,20 @@ def index(request):
     return render(request, 'oppattern/index.html')
 
 def upload(request):
-    if request.method != 'POST':
 
-        return render(request, 'oppattern/upload.html')
+    if request.method != 'POST':
+        spinner_show = True
+        context = {'spinner_show':spinner_show,}
+        return render(request, 'oppattern/upload.html', context)
 
     else:
+
         #Uploade xlsx file and save ExcelFile objects.
         excel_file = request.FILES['excel_file']
         title = excel_file.name
         file = ExcelFile()
         file.title = title
-        file.date = timezone.now() #.date()
+        file.date = timezone.now()
         file.save()
         date = file.date
 
@@ -66,7 +69,7 @@ def upload(request):
                 file.save()
 
 
-        contetxt = {'title': title, 'date': date}
+        contetxt = {'title': title, 'date': date,}
         return render(request, 'oppattern/upload.html', contetxt)
 
 def check_excel(request):
@@ -118,6 +121,8 @@ def show_daily_plan(request, excel_id, date_choice):
     subjects = {}
     for class_name in classroom_all:
         subjects[class_name] = to_html_pattern(plans, class_name)
+
+
 
     context = {'time_list': make_time_description().keys(), 'subjects': subjects, 'date': date, 'week_day': days[week_day]}
     return render(request, 'oppattern/show_daily_plan.html', context)
@@ -182,6 +187,3 @@ def to_html_pattern(plan_list, classroom_name):
             pattern_list[number] = []
 
     return pattern_list
-
-
-
