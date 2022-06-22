@@ -1,0 +1,65 @@
+@media screen, print {
+    body {
+        margin:1%;
+        padding:0;
+        font-family:helvetica, sans-serif;
+    }
+
+    .classroom{
+        font-size: 10px;
+    }
+
+    .subjects{
+        font-size: 12px;
+    }
+    .hours {
+        font-size: 10px;
+    }
+
+    table{
+        width: 98%;
+        height: 99%;
+        border-collapse: collapse;
+        border-spacing:0;
+        margin-bottom: 1%;
+    }
+
+    .table td, th {
+        height: 40px;
+        width: 5px;
+        font-size: 12px;
+        border: 1px solid black;
+        text-align: center;
+        vertical-algin: center;
+    }
+    tr:nth-child(even) {background-color: #f2f2f2;}
+
+}
+
+@media screen {
+
+    tr:hover {background-color: #728FCE;}
+    }
+
+
+
+@media print {@page {size: landscape}
+    body {
+        margin:1%;
+         max-width: 90%;
+         max-height: 80%;
+    }
+        .hours {
+        font-size: 6px;
+    }
+        .subjects{
+        font-size: 8px;
+    }
+    .hours {
+        font-size: 8px;
+        transform: rotate(60deg);
+    }
+    .back{
+    	display: none;
+    }
+}

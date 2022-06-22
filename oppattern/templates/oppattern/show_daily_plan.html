@@ -5,28 +5,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link href="{% static 'css/plan.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daily_plan.css' %}" rel="stylesheet">
 </head>
     <body>
 
         <div>
         <caption>{{date.date|date:'Y-m-d'}} {{week_day}}</caption>
-            <a href="{%  url 'oppattern:daily_plan' %}">POWRÓT</a>
+            <a href="{%  url 'oppattern:daily_plan' %}" class="back">POWRÓT</a>
         <table>
             <thead>
             <tr>
-            <th>Sale </th>
+            <th class="classroom">Sale </th>
                {% for time in time_list %}
-                <th><time> {{ time|time:"H:i" }} </time></th>
+                <th class="hours"><time> {{ time|time:"H:i" }} </time></th>
                {% endfor %}
             </tr>
            </thead>
             <tbody>
 
             {% for key, value in subjects.items %}
-            <tr><th>{{key}}</th>
+            <tr><th class="classroom">{{key}}</th>
                 {% for class in value %}
-                    <th colspan="{{class.merged_cell}}">{{class.subject_name}}</th>
+                    <th colspan="{{class.merged_cell}}" class="subjects" >{{class.subject_name}}</th>
                 {% endfor %}
             </tr>
             {% endfor %}
